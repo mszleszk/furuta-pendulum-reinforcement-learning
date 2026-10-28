@@ -1,0 +1,28 @@
+<mujoco model="furuta_pendulum">
+    <compiler angle="radian" inertiafromgeom="true"/>
+    <option gravity="0 0 -9.81" integrator="RK4" timestep="0.002"/>
+
+    <worldbody>
+        <light pos="0 0 3" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+        <geom name="floor" type="plane" size="2 2 0.1" rgba="0.9 0.9 0.9 1"/>
+
+        <body name="base" pos="0 0 0.075">
+            <geom type="cylinder" size="0.04 0.075" rgba="0.3 0.3 0.3 1" mass="0.3"/>
+            
+            <body name="arm" pos="0 0 0.075">
+                <joint name="arm_joint" type="hinge" axis="0 0 1" pos="0 0 0" damping="0.005" frictionloss="0.003"/>
+                <geom type="capsule" fromto="0 0 0  0.08 0 0" size="0.008" rgba="0.8 0.2 0.2 1" mass="0.01"/>
+                
+                <body name="pendulum" pos="0.08 0 0">
+                    <joint name="pendulum_joint" type="hinge" axis="1 0 0" pos="0 0 0" damping="0.0002" frictionloss="0.0001"/>
+                    <geom type="capsule" fromto="0 0 0  0 0 -0.08" size="0.01" rgba="0.2 0.2 0.8 1" mass="0.03"/>
+                    <geom type="sphere" pos="0 0 -0.08" size="0.015" rgba="0.9 0.6 0.1 1" mass="0.02"/>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+
+    <actuator>
+        <motor name="arm_motor" joint="arm_joint" ctrlrange="-1 1" gear="1"/>
+    </actuator>
+</mujoco>

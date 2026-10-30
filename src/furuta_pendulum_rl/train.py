@@ -17,7 +17,7 @@ def main():
         tensorboard_log="./logs/",
     )
 
-    model.learn(total_timesteps=1_000_000)
+    model.learn(total_timesteps=2_000_000)
 
     model.save(constants.RL_MODEL_PATH)
     env.save(constants.VEC_NORMALIZE_PATH)

@@ -18,16 +18,17 @@ class FurutaEnv(gym.Env):
             self.model.actuator_ctrlrange[:, 1].astype(np.float32),
         )
 
-        obs_dim = self.model.nq + self.model.nv
-        self.observation_space = spaces.Box(-np.pi, np.pi, (obs_dim,))
+        obs_low = np.array([0, 0, -np.inf, -np.inf], dtype=np.float32)
+        obs_high = np.array([2 * np.pi, 2 * np.pi, np.inf, np.inf], dtype=np.float32)
+        self.observation_space = spaces.Box(obs_low, obs_high, (4,))
 
     def _get_obs(self):
         normalized_qpos = self._normalize_angle(self.data.qpos)
         return np.concatenate([normalized_qpos, self.data.qvel]).astype(np.float32)
 
-    #[-pi, pi]
+    #[0, 2pi)
     def _normalize_angle(self, theta):
-        return (theta + np.pi) % (2 * np.pi) - np.pi
+        return theta % (2 * np.pi)
 
     def step(self, action):
         self.data.ctrl[:] = action
@@ -39,16 +40,16 @@ class FurutaEnv(gym.Env):
         base_angle = self.data.qpos[0]
         pendulum_angle = self.data.qpos[1]
         
-        angle_diff = self._normalize_angle(pendulum_angle - np.pi)
+        angle_diff = pendulum_angle - np.pi
 
-        angle_reward = np.exp(-2.0 * (angle_diff ** 2))
-        base_penalty = 0.001 * (base_angle ** 2)
+        angle_reward = np.cos(angle_diff)
+        base_penalty = 0.005 * (base_angle ** 2)
         action_penalty = 0.0005 * np.sum(np.square(action))
         velocity_penalty = 0.001 * np.sum(np.square(self.data.qvel))
 
         reward = angle_reward - base_penalty - action_penalty - velocity_penalty
 
-        terminated = bool(np.abs(angle_diff) > 1.0)
+        terminated = False
         
         self.current_step += 1
         truncated = self.current_step >= self.max_episode_steps
@@ -61,7 +62,7 @@ class FurutaEnv(gym.Env):
         self.current_step = 0
 
         self.data.qpos[0] = np.random.uniform(-0.1, 0.1)
-        self.data.qpos[1] = np.pi + np.random.uniform(-0.1, 0.1)
+        self.data.qpos[1] = np.random.uniform(-0.1, 0.1)
         
         self.data.qvel[:] = np.random.uniform(-0.1, 0.1, size=self.model.nv)
 

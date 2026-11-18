@@ -18,7 +18,9 @@ def main():
     model_mj = mujoco_env.model
     data_mj = mujoco_env.data
 
-    env.reset()
+    mujoco_env.data.qpos[0] = np.random.uniform(-np.pi, np.pi)
+    mujoco_env.data.qpos[1] = np.random.uniform(-0.2, 0.2)
+    mujoco_env.data.qvel[:] = np.random.uniform(-0.2, 0.2, size=model_mj.nv)
 
     def controller(m, d):
         obs = mujoco_env._get_obs()
